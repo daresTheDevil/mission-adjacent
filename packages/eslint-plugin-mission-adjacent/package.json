@@ -1,0 +1,38 @@
+{
+  "name": "eslint-plugin-mission-adjacent",
+  "version": "0.0.0",
+  "description": "ESLint rules distilled from safety-critical coding standards, translated to TypeScript. NOT certified for safety-critical use.",
+  "keywords": ["eslint", "eslintplugin", "eslint-plugin", "typescript", "safety-critical", "assertion-density"],
+  "license": "MIT",
+  "author": "David Kay",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "peerDependencies": {
+    "eslint": "^8.57.0 || ^9.0.0 || ^10.0.0"
+  },
+  "dependencies": {
+    "@typescript-eslint/types": "catalog:",
+    "@typescript-eslint/utils": "catalog:"
+  },
+  "devDependencies": {
+    "@fast-check/vitest": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript-eslint/rule-tester": "catalog:",
+    "eslint": "catalog:",
+    "fast-check": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "vitest": "catalog:"
+  }
+}
