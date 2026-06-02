@@ -48,6 +48,13 @@ export const spine = defineConfig({
   rules: {
     // P10 #5 — assertions are executable pre/postconditions. The flagship rule.
     'mission-adjacent/require-assertion-density': 'error',
+    // P10 #2 — a syntactically infinite loop (while(true)/for(;;)) with no
+    // break/return/throw escape. Obvious-cases proxy; proving a real loop's
+    // bound is the LLM tier's residue, not this rule's job.
+    'mission-adjacent/bounded-loops': 'error',
+    // P10 #1 — a named function that re-enters itself with no base-case guard
+    // before the recursive call. Honest syntactic proxy for unbounded stack.
+    'mission-adjacent/no-unbounded-recursion': 'error',
   },
 });
 
@@ -66,6 +73,17 @@ export default defineConfig(
       // strongest *deterministic* totality check: the compiler proving every
       // union branch is handled. Must be flipped on manually.
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
+      // Lineage rule #7 (strong typing / no implicit conversion). Lives in
+      // stylistic-type-checked, NOT strict-type-checked (verified against
+      // typescript-eslint v8, 2026-06-02), so layering strict alone leaves it
+      // off. We flip it on explicitly rather than pull all of stylistic, whose
+      // cosmetic rules fight house style. Type-aware: it fires only on `a || b`
+      // where the checker proves `a` is nullable — turning the `x || 0` vs
+      // `x ?? 0` null-vs-falsy coercion from an LLM judgment call into a
+      // deterministic lint error with an autofix. Default options: `0`/`''`
+      // stay meaningful, so it flags `number | null || 0` (the slot-occupancy
+      // case) where `?? 0` is the behavior-preserving, safer form.
+      '@typescript-eslint/prefer-nullish-coalescing': 'error',
     },
   },
   spine,
