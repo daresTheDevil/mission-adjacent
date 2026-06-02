@@ -1,0 +1,47 @@
+packages:
+  - 'packages/*'
+
+# pnpm 11 defaults minimumReleaseAge to 1440min (1-day supply-chain cooldown).
+# Good default — keep it. But the typescript-eslint 8.60.1 family was published
+# inside that window and we've verified it against the docs this session, so
+# carve out only those exact packages rather than weakening the policy globally.
+minimumReleaseAgeExclude:
+  - typescript-eslint@8.60.1
+  - '@typescript-eslint/utils@8.60.1'
+  - '@typescript-eslint/rule-tester@8.60.1'
+  - '@typescript-eslint/parser@8.60.1'
+  - '@typescript-eslint/project-service@8.60.1'
+  - '@typescript-eslint/scope-manager@8.60.1'
+  - '@typescript-eslint/tsconfig-utils@8.60.1'
+  - '@typescript-eslint/type-utils@8.60.1'
+  - '@typescript-eslint/types@8.60.1'
+  - '@typescript-eslint/typescript-estree@8.60.1'
+  - '@typescript-eslint/visitor-keys@8.60.1'
+  - '@typescript-eslint/eslint-plugin@8.60.1'
+
+# Shared dep versions pinned once, referenced as "catalog:" in each package.
+# Keeps typescript-eslint identical across plugin, config, and harness.
+catalog:
+  typescript: ^6.0.3
+  typescript-eslint: ^8.60.1
+  '@typescript-eslint/utils': ^8.60.1
+  '@typescript-eslint/types': ^8.60.1
+  '@typescript-eslint/rule-tester': ^8.60.1
+  eslint: ^10.4.1
+  # js.configs.recommended — the "recommended stays silent" half of every
+  # exhibit contrast. Shares eslint's major (10.x) but NOT its minor/patch line;
+  # latest is 10.0.1, so pin to that, not to eslint's 10.4.1.
+  '@eslint/js': ^10.0.1
+  vitest: ^4.1.8
+  fast-check: ^4.8.0
+  '@fast-check/vitest': ^0.4.1
+  '@types/node': ^25.9.1
+  # Zero-config TS runner for the verify-exhibits harness script. esbuild-backed,
+  # no build step. Range floors below the latest patch so the supply-chain
+  # cooldown can resolve an already-aged release.
+  tsx: ^4.22.0
+
+# esbuild fetches its platform-native binary in a postinstall. Trusted, ubiquitous
+# (tsx and vitest both ride on it). Allow it so the verify-exhibits runner works.
+allowBuilds:
+  esbuild: true

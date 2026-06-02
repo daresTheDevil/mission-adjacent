@@ -1,0 +1,74 @@
+# Anthropic
+.claude/
+.claude*/
+CLAUDE.md
+CLAUDE.local.md
+.anthropic/
+.mcp.json
+**/handoff.md
+INFO-FROM-CLAUDE-*.md
+*-FROM-CLAUDE-*.md
+
+# Cursor
+.cursor/
+.cursorrules
+.cursorignore
+.cursor-tutor/
+
+# GitHub Copilot
+.github/copilot-instructions.md
+**/copilot-instructions.md
+.copilot/
+
+# Aider
+.aider*
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache*
+
+# Continue / Cody / Codeium / Tabnine
+.continue/
+.sourcegraph/
+.cody/
+.codeium/
+.tabnine/
+
+# Cline / Roo / Windsurf / Zed AI / Gemini / OpenAI / Junie / Amazon Q
+.cline/
+.clinerules
+.roo/
+.roomodes
+.windsurfrules
+.windsurf/
+.zed/
+.gemini/
+GEMINI.md
+.openai/
+.codex/
+AGENTS.md
+AGENT.md
+.junie/
+.amazonq/
+
+# Generic assistant rule / prompt / context files
+.ai/
+.aiconfig
+.prompt/
+.prompts/
+*.prompt.md
+.llm/
+.rules/
+. rules
+
+# Misc AI tooling caches / logs
+.ai-cache/
+*.ai.log
+.context/
+
+# Node / build
+node_modules/
+dist/
+*.tsbuildinfo
+.eslintcache
+coverage/
+.DS_Store
