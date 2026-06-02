@@ -1,0 +1,27 @@
+{
+  "name": "harness",
+  "version": "0.0.0",
+  "private": true,
+  "description": "PRIVATE. The whole-stack determinism runner: lint + property-test gate + import-cycle/tsc orchestration. Drop-in for the user's own repos. Never published.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "verify:exhibits": "tsx src/verify-exhibits.ts"
+  },
+  "dependencies": {
+    "eslint-config-mission-adjacent": "workspace:*",
+    "eslint-plugin-mission-adjacent": "workspace:*"
+  },
+  "devDependencies": {
+    "@eslint/js": "catalog:",
+    "@fast-check/vitest": "catalog:",
+    "@types/node": "catalog:",
+    "eslint": "catalog:",
+    "fast-check": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

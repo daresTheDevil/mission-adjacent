@@ -1,0 +1,26 @@
+{
+  "name": "eslint-config-mission-adjacent",
+  "version": "0.0.0",
+  "description": "Determinism-maximizing ESLint flat config: layers typescript-eslint strict-type-checked, flips on switch-exhaustiveness-check, adds the mission-adjacent proof-spine rules. NOT certified for safety-critical use.",
+  "keywords": ["eslint", "eslintconfig", "eslint-config", "typescript", "flat-config", "safety-critical"],
+  "license": "MIT",
+  "author": "David Kay",
+  "type": "module",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": ["index.js"],
+  "scripts": {
+    "build": "true",
+    "test": "true",
+    "typecheck": "true"
+  },
+  "peerDependencies": {
+    "eslint": "^9.0.0 || ^10.0.0",
+    "typescript": ">=4.8.4 <6.1.0"
+  },
+  "dependencies": {
+    "eslint-plugin-mission-adjacent": "workspace:^",
+    "typescript-eslint": "catalog:"
+  }
+}

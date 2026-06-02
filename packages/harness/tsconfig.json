@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    // The config package is @ts-check'd JS with no shipped .d.ts; allow the JS
+    // import to resolve. tsx (esbuild) ignores this — it's for `tsc` runs only.
+    "allowJs": true,
+    "checkJs": false
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist"]
+}
