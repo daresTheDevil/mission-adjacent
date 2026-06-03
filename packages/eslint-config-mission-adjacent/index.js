@@ -4,7 +4,7 @@
  *
  * Determinism-maximizing flat config. Layers typescript-eslint's strictest
  * preset, flips on the totality checks no preset enables, and adds the
- * mission-adjacent proof-spine rules. The design goal (see SPEC.md): push every
+ * mission-adjacent proof-spine rules. The design goal (see docs/design.md): push every
  * correctness check as far UP the determinism ladder as TS allows, so the
  * decisions left for a human/LLM are as few as possible.
  *
