@@ -1,3 +1,7 @@
+<p align="center">
+  <img src=".github/banner.png" alt="mission-adjacent: it's probably fine" width="100%">
+</p>
+
 # mission-adjacent
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -10,7 +14,7 @@ ladder as the language allows.
 
 The name is the honest part. This is near mission-critical, deliberately NOT
 claiming to be it. The rules that fly Mars landers, minus the part where it has
-to actually work.
+to land.
 
 ---
 
