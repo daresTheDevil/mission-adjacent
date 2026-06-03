@@ -108,6 +108,70 @@ const INLINE_CASES: ExhibitCase[] = [
     code: ['export function identity(x) {', '  return x;', '}', ''].join('\n'),
     expect: null,
   },
+  {
+    // Bounded loop, real slot-occupancy shape: iterate a FIXED property list
+    // (for-of over a small array), bounded by construction. The two guard
+    // asserts satisfy the assertion-density rule, so this CONTROL isolates the
+    // loop: the spine stays SILENT, proving the SPEC promise that we never flag
+    // a loop whose bound we can't prove — only the ones provably infinite by
+    // syntax. This is the grain-ladder finding made deterministic: a real
+    // bounded loop is a green non-event, not a hand-written reviewer note.
+    name: 'bounded for-of over fixed list (control)',
+    code: [
+      '/* global assert */',
+      'export function sumSelected(row, props) {',
+      '  assert(row !== null);',
+      '  assert(Array.isArray(props));',
+      '  let total = 0;',
+      '  for (const prop of props) {',
+      '    total += Number(row[prop]);',
+      '  }',
+      '  return total;',
+      '}',
+      '',
+    ].join('\n'),
+    expect: null,
+  },
+  {
+    // Unbounded loop: a poll loop with no break/return/throw. Ships fine, hangs
+    // forever the day the exit condition is forgotten. recommended is mute (its
+    // no-constant-condition exempts while(true) by default); the spine fires
+    // bounded-loops. The two asserts keep assertion-density out of the way so
+    // the contrast isolates exactly bounded-loops.
+    name: 'while(true) poll, no escape',
+    code: [
+      '/* global assert, handle */',
+      'export function drain(queue) {',
+      '  assert(queue !== null);',
+      '  assert(typeof queue.pop === "function");',
+      '  while (true) {',
+      '    const job = queue.pop();',
+      '    handle(job);',
+      '  }',
+      '}',
+      '',
+    ].join('\n'),
+    expect: 'mission-adjacent/bounded-loops',
+  },
+  {
+    // Unbounded recursion: a tree walk with no base-case guard before it calls
+    // itself. Blows the stack on any real input. recommended is mute; the spine
+    // fires no-unbounded-recursion. (assertion-density also fires here — a
+    // recursive walker with no asserts has both problems — so this case asserts
+    // on the rule list containing no-unbounded-recursion, not on exclusivity.)
+    name: 'tree walk, no base case',
+    code: [
+      '/* global assert */',
+      'export function walk(node) {',
+      '  assert(node !== null);',
+      '  const left = walk(node.left);',
+      '  const right = walk(node.right);',
+      '  return left + right;',
+      '}',
+      '',
+    ].join('\n'),
+    expect: 'mission-adjacent/no-unbounded-recursion',
+  },
 ];
 
 /** A row in the printed results table, post-evaluation. */

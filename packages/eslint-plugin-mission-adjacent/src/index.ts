@@ -9,9 +9,13 @@
  * NOT certified, validated, or fit for actual safety-critical use. See README.
  */
 import { requireAssertionDensity } from './rules/require-assertion-density.js';
+import { noUnboundedRecursion } from './rules/no-unbounded-recursion.js';
+import { boundedLoops } from './rules/bounded-loops.js';
 
 export const rules = {
   'require-assertion-density': requireAssertionDensity,
+  'no-unbounded-recursion': noUnboundedRecursion,
+  'bounded-loops': boundedLoops,
 };
 
 export default { rules };
