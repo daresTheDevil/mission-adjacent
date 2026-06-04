@@ -103,8 +103,8 @@ export default [spine];
 
 ## What works today
 
-Three proof-spine rules ship in `eslint-plugin-mission-adjacent`, plus the config
-that wires them with the strict preset:
+Five rules ship in `eslint-plugin-mission-adjacent`, plus the config that wires
+them with the strict preset. Three are the proof spine:
 
 | Rule | Lineage | What it does |
 |---|---|---|
@@ -119,6 +119,28 @@ Where a property can't be decided soundly in TypeScript (a real loop's
 termination, a cache's true boundedness), the design ships a deterministic
 *proxy* (a runtime bound plus a property test that drives it) and calls it a
 proxy. Never a proof.
+
+### The complexity tier
+
+Two more rules ship on top of the spine, as a deliberate pair. They are governed
+by [ADR 0008](docs/adr/0008-lineage-backed-vs-lineage-inspired-tiers.md), which
+splits rules into two honesty tiers: **lineage-backed** (the threshold traces to
+a named safety standard, and the message cites it) and **lineage-inspired** (the
+method or number is invented, labeled loudly as a deviation, with no safety claim
+borrowed).
+
+| Rule | Tier | Default | What it does |
+|---|---|---|---|
+| `cyclomatic-complexity` | lineage-backed | 20 (JSF++ AV Rule 3) | Plain McCabe CC, counted the standard way. The configurable values are themselves the lineage: 10 (McCabe), 15 (MISRA/NASA), 20 (JSF++). Set your own below 10 and the message stops claiming lineage cover. |
+| `cognitive-complexity` | lineage-inspired | 15 (Sonar S3776) | Campbell's curtain-aware method, reimplemented from the Sonar white paper. The number is Sonar's, not a safety value, and the message says so at every threshold. |
+
+The pair exists because plain CC cries wolf. CC counts every `||`/`??`/`?:` as a
+branch, so a flat curtain of field defaults scores high while being trivially
+readable. On the shared fixtures the flat curtain scores cyclomatic 21 and a
+genuinely-nested function scores 18... the curtain scores *higher* than real
+nesting. Cognitive complexity inverts that: same-operator runs collapse and
+nesting compounds, so the curtain drops to 10 (under the limit, quiet) and the
+nesting climbs to 50 (flagged). Real complexity wins, the curtain goes silent.
 
 ## Lineage, not conformance
 
