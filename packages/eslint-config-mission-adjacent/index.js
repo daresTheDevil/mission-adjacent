@@ -60,6 +60,12 @@ export const spine = defineConfig({
     // lineage-backed tier (ADR 0008); the curtain-aware cognitive variant is a
     // separate follow-up rule.
     'mission-adjacent/cyclomatic-complexity': ['error', { max: 20 }],
+    // Campbell's cognitive complexity over the limit. Default 15, from Sonar
+    // S3776 — Sonar's invented number, NOT a safety-lineage value. The
+    // lineage-INSPIRED tier (ADR 0008): curtain-aware where cyclomatic is not, so
+    // a flat field-default curtain collapses instead of crying wolf. The message
+    // makes no safety claim at any threshold.
+    'mission-adjacent/cognitive-complexity': ['error', { max: 15 }],
   },
 });
 

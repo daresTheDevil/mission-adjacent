@@ -12,12 +12,14 @@ import { requireAssertionDensity } from './rules/require-assertion-density.js';
 import { noUnboundedRecursion } from './rules/no-unbounded-recursion.js';
 import { boundedLoops } from './rules/bounded-loops.js';
 import { cyclomaticComplexity } from './rules/cyclomatic-complexity.js';
+import { cognitiveComplexity } from './rules/cognitive-complexity.js';
 
 export const rules = {
   'require-assertion-density': requireAssertionDensity,
   'no-unbounded-recursion': noUnboundedRecursion,
   'bounded-loops': boundedLoops,
   'cyclomatic-complexity': cyclomaticComplexity,
+  'cognitive-complexity': cognitiveComplexity,
 };
 
 export default { rules };
