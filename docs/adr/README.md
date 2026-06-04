@@ -22,6 +22,7 @@ an `Enforceability` field using the determinism-ladder vocabulary
 | [0005](0005-no-conformance-claim-misra-clean-naming.md) | No conformance claim, non-safety disclaimer, MISRA-clean naming | llm-only |
 | [0006](0006-single-exit-ships-default-off.md) | Single-entry/single-exit ships default-off | static-lint |
 | [0007](0007-harden-owns-the-llm-tier.md) | dk:harden owns the LLM tier and only the LLM tier | llm-only |
+| [0008](0008-lineage-backed-vs-lineage-inspired-tiers.md) | Two rule tiers (lineage-backed / lineage-inspired); complexity is the first | static-lint / llm-only |
 
 ## Related central ADRs
 
