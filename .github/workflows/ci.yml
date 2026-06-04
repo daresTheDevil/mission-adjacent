@@ -43,12 +43,16 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Cheapest signal first. The compiler is the only co-reviewer (how-i-code).
-      - name: Typecheck
-        run: pnpm typecheck
-
+      # Build first, not typecheck. The harness typechecks against the plugin's
+      # emitted dist/*.d.ts (exports map points there), and dist is gitignored, so
+      # on a clean checkout the types do not exist until build runs. Build is a
+      # prerequisite of typecheck in this monorepo, not a peer.
       - name: Build
         run: pnpm build
+
+      # The compiler is the only co-reviewer (how-i-code).
+      - name: Typecheck
+        run: pnpm typecheck
 
       - name: Test
         run: pnpm test
