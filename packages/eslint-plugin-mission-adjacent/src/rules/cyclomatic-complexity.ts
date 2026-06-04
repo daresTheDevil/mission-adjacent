@@ -33,11 +33,18 @@
  * enforcer of the standard, and it is the reason the lineage-inspired
  * `cognitive-complexity` rule (ADR 0008, curtain-aware) exists as the follow-up.
  *
- * SWITCH CARVE-OUT. JSF++ AV Rule 3 notes that a function containing a `switch`
- * with many `case` labels may legitimately exceed the limit. We count each
- * `case` (classic McCabe), so a large dispatch switch will score high; that is
- * the one documented exception — disable the rule on the line for a genuine
- * dispatch table rather than splitting it.
+ * SWITCH CARVE-OUT — and it is a STOPGAP, not the end state. JSF++ AV Rule 3
+ * notes that a function containing a `switch` with many `case` labels may
+ * legitimately exceed the limit. We count each `case` (classic McCabe), so a
+ * large dispatch switch scores high. For now the escape hatch is to disable the
+ * rule on the line for a genuine dispatch table rather than splitting it.
+ *
+ * But that disable is temporary scaffolding. A flat dispatch switch is the same
+ * class of false positive as the `||` curtain: high count, trivially readable,
+ * no real nesting. The intended fix is `cognitive-complexity` (ADR 0008), which
+ * does NOT penalize flat dispatch — once it ships, the dispatch case moves there
+ * and these disable comments should be removed, not left to accumulate. Treat a
+ * scattered `cyclomatic-complexity` disable as a migration debt, not a solution.
  *
  * NOT certified for safety-critical use. See README.
  */
@@ -70,7 +77,10 @@ const LINEAGE_FLOOR = LINEAGE_THRESHOLDS.mccabe;
 
 export type Options = [{ max?: number }];
 
-export type MessageIds = 'tooComplex' | 'subLineageThreshold';
+export type MessageIds =
+  | 'tooComplex'
+  | 'tooComplexSubLineage'
+  | 'subLineageThreshold';
 
 /**
  * Count the cyclomatic complexity of a single function body the standard McCabe
@@ -188,10 +198,23 @@ export const cyclomaticComplexity = createRule<Options, MessageIds>({
         'Flag a function whose cyclomatic complexity exceeds the threshold (default 20, JSF++ AV Rule 3). Lineage-backed; counts CC the standard McCabe way.',
     },
     messages: {
+      // Lineage-backed report: the configured limit is at or above McCabe's 10,
+      // so the safety lineage genuinely backs it. Only this variant gets to cite
+      // JSF++/McCabe — the citation must never appear on a number no standard
+      // blessed (ADR 0005 honesty; the reason there are two variants).
       tooComplex:
-        'Function has a cyclomatic complexity of {{complexity}}, over the limit of {{max}}. The default limit of 20 is JSF++ AV Rule 3; the safety lineage spans 10 (McCabe) to 20 (JSF++). Split the function, or if it is a genuine dispatch switch (the documented JSF++ carve-out) disable this rule on the line.',
+        'Function has a cyclomatic complexity of {{complexity}}, over the limit of {{max}}. The default limit of 20 is JSF++ AV Rule 3; the safety lineage spans 10 (McCabe) to 20 (JSF++). Split the function, or if it is a genuine dispatch switch (the documented JSF++ carve-out) disable this rule on the line — but treat that disable as a stopgap until cognitive-complexity ships, not a permanent exemption.',
+      // Sub-lineage report: the configured limit is below McCabe's 10. The
+      // lineage citation is deliberately absent — this is the user\'s own number,
+      // and saying otherwise would be the exact dishonesty ADR 0005 prevents.
+      // This fires on EVERY violation (not a suppressible one-time warning), so
+      // the "not lineage-backed" label travels with the verdict it qualifies.
+      tooComplexSubLineage:
+        'Function has a cyclomatic complexity of {{complexity}}, over your configured limit of {{max}}. That limit is below the lineage floor of {{floor}} (McCabe 1976); no safety standard sets a cyclomatic-complexity limit this strict, so this threshold is your own and NOT lineage-backed. mission-adjacent makes no safety claim about it.',
+      // One-time heads-up at file scope when a sub-lineage threshold is in play.
+      // Belt and braces with the per-violation message above.
       subLineageThreshold:
-        'Configured max of {{max}} is below the lineage floor of {{floor}} (McCabe 1976). No safety standard sets a cyclomatic-complexity limit this strict, so this threshold is your own, not lineage-backed.',
+        'Configured max of {{max}} is below the lineage floor of {{floor}} (McCabe 1976). No safety standard sets a cyclomatic-complexity limit this strict, so this threshold is your own, not lineage-backed. Every violation this rule reports under this config is your standard, not a safety standard.',
     },
     schema: [
       {
@@ -227,6 +250,11 @@ export const cyclomaticComplexity = createRule<Options, MessageIds>({
       }
     }
 
+    // Is the active threshold lineage-backed (>= McCabe's 10) or the user's own?
+    // Decides which violation message fires, so the lineage citation never
+    // appears on a number no standard blessed.
+    const isLineageBacked = max >= LINEAGE_FLOOR;
+
     /** Score one function node and report if it exceeds the threshold. */
     function check(node: TSESTree.Node): void {
       warnSubLineageOnce(node);
@@ -234,8 +262,8 @@ export const cyclomaticComplexity = createRule<Options, MessageIds>({
       if (complexity > max) {
         context.report({
           node,
-          messageId: 'tooComplex',
-          data: { complexity, max },
+          messageId: isLineageBacked ? 'tooComplex' : 'tooComplexSubLineage',
+          data: { complexity, max, floor: LINEAGE_FLOOR },
         });
       }
     }

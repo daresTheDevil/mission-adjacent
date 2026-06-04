@@ -38,14 +38,63 @@ ruleTester.run('cyclomatic-complexity', cyclomaticComplexity, {
       options: [{ max: 10 }],
       errors: [{ messageId: 'tooComplex' }],
     },
-    // Sub-lineage threshold (below McCabe's 10) emits the soft warning AND the
-    // complexity error: two reports on the same trivial-but-over function.
+    // Sub-lineage threshold (below McCabe's 10) emits the file-scope warning AND
+    // the sub-lineage complexity error — NOT the lineage-backed `tooComplex`.
+    // The violation message itself must not claim JSF++/McCabe cover for a
+    // number no standard blessed (ADR 0005). Two reports on the over function.
     {
       code: 'function f(n) { return n > 0 ? 1 : 2; }',
       options: [{ max: 1 }],
-      errors: [{ messageId: 'subLineageThreshold' }, { messageId: 'tooComplex' }],
+      errors: [
+        { messageId: 'subLineageThreshold' },
+        { messageId: 'tooComplexSubLineage' },
+      ],
     },
   ],
+});
+
+/**
+ * Honesty guard (ADR 0005). The lineage citation must travel with the verdict
+ * only when the verdict is actually lineage-backed. A lineage-backed threshold
+ * (>= McCabe 10) gets the JSF++ citation; a sub-lineage one (< 10) must NOT —
+ * its violation message has to say the limit is the user's own, not a standard.
+ * This is the exact seam a reviewer flagged: a soft warning is suppressible, so
+ * the honesty has to ride the per-violation message, which fires every time.
+ */
+describe('cyclomatic-complexity lineage honesty in the message', () => {
+  const linter = new TSESLint.Linter();
+  function messages(code: string, max: number): string[] {
+    const config: TSESLint.FlatConfig.Config = {
+      plugins: {
+        'mission-adjacent': {
+          rules: { 'cyclomatic-complexity': cyclomaticComplexity },
+        },
+      },
+      rules: { 'mission-adjacent/cyclomatic-complexity': ['error', { max }] },
+    };
+    return linter.verify(code, config).map((m) => m.message);
+  }
+
+  // A function comfortably over both a lineage (10) and a sub-lineage (2) limit:
+  // base 1 + 12 ternaries = CC 13.
+  const over = `function f(x) { return ${Array.from({ length: 12 }, (_, i) => `x === ${i} ? ${i} :`).join(' ')} -1; }`;
+
+  it('cites JSF++ when the limit is lineage-backed (max >= 10)', () => {
+    const violation = messages(over, 10).find((m) =>
+      m.includes('cyclomatic complexity of'),
+    );
+    expect(violation).toContain('JSF++');
+  });
+
+  it('does NOT cite JSF++ when the limit is sub-lineage (max < 10)', () => {
+    const violation = messages(over, 2).find((m) =>
+      m.includes('cyclomatic complexity of'),
+    );
+    expect(violation).toBeDefined();
+    // The honesty property: no false lineage cover on an invented number.
+    expect(violation).not.toContain('JSF++');
+    expect(violation).toContain('NOT lineage-backed');
+  });
 });
 
 /**
