@@ -233,6 +233,23 @@ describe('cognitive-complexity invariants', () => {
     return `function f(o) { return ${ors}; }`;
   }
 
+  // The same N-operand chain with ONE operator flipped to `&&`. `&&` binds
+  // tighter than `||`, so `a || b && c || ...` parses as `a || (b && c) || ...`:
+  // the outer `||` run still collapses to +1, and the single nested `&&` is a new
+  // run worth +1 — total 2. One flip, one extra point. This is the control that
+  // proves the same-operator chain genuinely collapsed to 1, not that the metric
+  // is blind to logical operators entirely.
+  function oneFlipChain(n: number): string {
+    const ops = Array.from({ length: n }, (_, i) => `o.f${i}`);
+    // Join with `||` everywhere except a single `&&` at the second seam.
+    const joined = ops.reduce((acc, term, i) => {
+      if (i === 0) return term;
+      const op = i === 2 ? ' && ' : ' || ';
+      return `${acc}${op}${term}`;
+    }, '');
+    return `function f(o) { return ${joined}; }`;
+  }
+
   // N nested ifs, each one level deeper. Cognitive charges nesting+1 per level:
   // 1 + 2 + ... + N = N(N+1)/2 (the nesting penalty made visible).
   function nestedIfs(n: number): string {
@@ -243,16 +260,22 @@ describe('cognitive-complexity invariants', () => {
     return `function f(x) { ${body} }`;
   }
 
-  // INVARIANT 1: a same-operator OR curtain stays at the collapsed constant (1)
-  // independent of length, so it never flags at max 1 no matter how long. This is
-  // the curtain collapse — the core difference from cyclomatic, which scores
-  // linear-in-N here and WOULD flag a long enough chain. (max 1 is the lowest
-  // legal threshold; the message only fires on score > 1, so "never flags at
-  // max 1" is exactly "score stays <= 1 for all N".)
-  test.prop([fc.integer({ min: 2, max: 40 })])(
-    'collapses a same-operator chain so it never flags regardless of length',
+  // INVARIANT 1: the curtain collapse, pinned to the constant 1 from both sides.
+  // max 1 is the lowest legal threshold and the message fires only on score > 1,
+  // so a score of exactly 1 is unobservable directly. We pin it by a sandwich:
+  //   - a same-operator chain of any length N never flags at max 1, so its score
+  //     is <= 1 for all N (cyclomatic would score linear-in-N and flag a long
+  //     enough chain — this is the difference);
+  //   - the SAME-length chain with a single operator flipped DOES flag at max 1,
+  //     so that one flip pushed the score to >= 2.
+  // A run that collapses to <= 1 and gains exactly one point per operator change
+  // is a run that collapsed to 1. The flip is the control that rules out "the
+  // metric just ignores logical operators".
+  test.prop([fc.integer({ min: 3, max: 40 })])(
+    'collapses a same-operator chain to the constant 1 (a single flip adds one point)',
     (n) => {
       expect(violations(orChain(n), 1)).toBe(0);
+      expect(violations(oneFlipChain(n), 1)).toBe(1);
     },
   );
 
