@@ -1,0 +1,67 @@
+# CI for mission-adjacent. The repo sells determinism-maximizing discipline, so
+# the repo has to run it on itself. Gates fire cheapest-signal-first: typecheck
+# before build before tests, so a type error fails in seconds instead of minutes.
+#
+# The last gate is the dogfood. `verify:exhibits` lints sample code through the
+# mission-adjacent spine and exits non-zero if the rules stop catching the money
+# cases. It is the tool run against the tool... if the spine ever goes blind, CI
+# goes red here.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push to the same ref cancels the in-flight run. No point finishing CI
+# on a commit that is already superseded.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.1
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Build first, not typecheck. The harness typechecks against the plugin's
+      # emitted dist/*.d.ts (exports map points there), and dist is gitignored, so
+      # on a clean checkout the types do not exist until build runs. Build is a
+      # prerequisite of typecheck in this monorepo, not a peer.
+      - name: Build
+        run: pnpm build
+
+      # The compiler is the only co-reviewer (how-i-code).
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        run: pnpm test
+
+      # No illegal cross-package dependencies (dependency-cruiser).
+      - name: Boundaries
+        run: pnpm boundaries
+
+      # The dogfood. Run the mission-adjacent spine against sample code and prove
+      # it still catches the cases it claims to. Regression guard for the pitch.
+      - name: Verify exhibits (dogfood)
+        run: pnpm --filter harness verify:exhibits
