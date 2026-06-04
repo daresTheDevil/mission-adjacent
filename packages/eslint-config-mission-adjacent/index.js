@@ -55,6 +55,11 @@ export const spine = defineConfig({
     // P10 #1 — a named function that re-enters itself with no base-case guard
     // before the recursive call. Honest syntactic proxy for unbounded stack.
     'mission-adjacent/no-unbounded-recursion': 'error',
+    // JSF++ AV Rule 3 — cyclomatic complexity over the limit. Default 20, the
+    // most permissive lineage number (McCabe 10 / MISRA 15 / JSF++ 20). The
+    // lineage-backed tier (ADR 0008); the curtain-aware cognitive variant is a
+    // separate follow-up rule.
+    'mission-adjacent/cyclomatic-complexity': ['error', { max: 20 }],
   },
 });
 
